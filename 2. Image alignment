@@ -1,0 +1,111 @@
+##Activate Jupyter Lab
+
+import numpy as np
+import cv2
+import os
+import matplotlib.pyplot as plt
+
+from utils import load_tif2grayimg, overlap_imgs, visualize_images
+from registration import registration, apply_H, apply_elastic
+from metric import correlation_coefficient
+
+##Image Load
+
+# Write the root directory where the tif file is stored
+root_dir = "C:/annaconda_alignment/Workspace/Examples"
+
+# Create a directory that follows the structure below
+# root_dir
+# ├── Round_1
+# │   ├── {file_name1}_ch00.tif
+# │   ├── {file_name1}_ch01.tif
+# │   ├── ...
+# │   └── {file_name40}_ch03.tif
+# └── Round_2
+#     ├── {file_name1}_ch00.tif
+#     ├── {file_name1}_ch01.tif
+#     ├── ...
+#     └── {file_name40}_ch03.tif
+
+# Matching image file name
+file_name = "A"
+
+# Channel number based on matching, only change REG_CHANNEL and "Round n"
+src_directory_name = "Round_1"
+mov_directory_name = "Round_2"
+REG_CHANNEL = 0
+str_REG_CHANNEL = str(REG_CHANNEL).zfill(2)
+
+# Location of the reference image TIF file
+src_path = os.path.join(root_dir, src_directory_name, f"{file_name}_ch{str_REG_CHANNEL}.tif")
+# Location of the matching image file
+mov_path = os.path.join(root_dir, mov_directory_name, f"{file_name}_ch{str_REG_CHANNEL}.tif")
+
+# image load
+src_img = load_tif2grayimg(src_path)
+mov_img = load_tif2grayimg(mov_path)
+
+# images visualization
+visualize_images([src_img, mov_img], ["src_img", "mov_img"])
+
+
+##Registration
+
+aligned_img, H = registration(mov=mov_img, src=src_img, only_affine=True)
+
+metric_before = correlation_coefficient(src_img, mov_img)
+metric_after = correlation_coefficient(src_img, aligned_img)
+print("정합 전 correlation coefficient score:", metric_before)
+print("정합 후 correlation coefficient score:", metric_after)
+# visualizae overlapping images
+# The green image is the reference
+visualize_images([overlap_imgs(mov_img, src_img), overlap_imgs(aligned_img, src_img)], ["before", "after"])
+
+# You can see correlation coefficient score (before and after)
+
+
+##Check results in other channels
+
+# Channel to check (Only change the CHANNEL information)
+CHANNEL = 0
+str_CHANNEL = str(CHANNEL).zfill(2)
+
+src_path = os.path.join(root_dir, src_directory_name, f"{file_name}_ch{str_CHANNEL}.tif")
+mov_path = os.path.join(root_dir, mov_directory_name, f"{file_name}_ch{str_CHANNEL}.tif")
+
+# image load
+src_img = load_tif2grayimg(src_path)
+mov_img = load_tif2grayimg(mov_path)
+
+# registration
+after_affine = apply_H(mov_img, H)
+
+metric_before = correlation_coefficient(src_img, mov_img)
+metric_after = correlation_coefficient(src_img, aligned_img)
+print("before alignemnt correlation coefficient score:", metric_before)
+print("after alignment correlation coefficient score:", metric_after)
+# visualizae overlapping images
+# The green image is the reference
+visualize_images([overlap_imgs(mov_img, src_img), overlap_imgs(aligned_img, src_img)], ["before", "after"])
+
+
+##Save Results
+
+# You can change str_CHANEL = n. n
+str_CHANNEL = 0
+str_CHANNEL = str(str_CHANNEL).zfill(2)
+
+# The directory path to save the matching result image (Change only save_path)
+save_path = "./Results"
+os.makedirs(save_path, exist_ok=True)
+
+mov_path = os.path.join(root_dir, mov_directory_name, f"{file_name}_ch{str_CHANNEL}.tif")
+mov_img = cv2.imread(mov_path)
+after_affine = apply_H(mov_img, H)
+
+aligned_path = os.path.join(save_path, f"{file_name}_({str_CHANNEL}).tif")
+cv2.imwrite(aligned_path, after_affine)
+
+str_CHANNEL = 1
+str_CHANNEL = str(str_CHANNEL).zfill(2)
+
