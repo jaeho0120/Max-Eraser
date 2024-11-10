@@ -1,0 +1,17 @@
+##Using Anaconda Prompt
+
+#Installation
+conda create -n registration2 python=3.9 -y
+conda activate registration2
+pip install jupyterlab
+pip install numpy
+pip install opencv-python
+pip install imutils
+pip install matplotlib
+pip install scipy
+conda install ipykernel –y
+
+#Activation
+conda activate registration2
+cd {directory}
+jupyter lab
