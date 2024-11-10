@@ -1,2 +1,2 @@
-# stemcell_classification
-Github for [Human spinal cord organoids exhibiting neural tube morphogenesis for a quantifiable drug screening system of neural tube defects]
+# Image_alignment
+Github for [MAX Eraser: an affordable and simple reagent for antibody removal cycle in multiplex immunohistochemistry]
